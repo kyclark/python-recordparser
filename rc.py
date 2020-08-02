@@ -7,7 +7,7 @@ Purpose: Proof of concept for recordparser
 import argparse
 import recordparser
 import sys
-from typing import NamedTuple, TextIO
+from typing import NamedTuple, TextIO, Optional
 
 
 class Args(NamedTuple):
@@ -20,6 +20,7 @@ class Item(NamedTuple):
     id_: int
     name: str
     price: float
+    can_discount: Optional[bool]
 
 
 # --------------------------------------------------

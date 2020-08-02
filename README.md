@@ -49,7 +49,15 @@ except Exception as err:
     print(err)
 ```
 
-Each row from the input file will be 
+Each row from the input file will be converted to an `Item` which is based 
+on `NamedTuple` and so therefore will be an _immutable_ instance (which is a
+Good Thing).
+
+Fields/columns from the input file which are not named in the given class will be ignored.
+
+You can use `Optional` to allow for fields/columns to be absent or present.
+
+You can use `Union[str, float]` to parse, e.g., a field as either a string or a floating point number
 
 ## Author
 
