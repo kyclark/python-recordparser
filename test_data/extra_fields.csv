@@ -1,0 +1,4 @@
+id_,name,price,can_discount
+1,foo,3.25,True
+2,bar,.43,False
+3,baz,4.01,True
