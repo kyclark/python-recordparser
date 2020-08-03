@@ -7,7 +7,7 @@ Purpose: Proof of concept for recordparser
 import argparse
 import recordparser
 import sys
-from typing import NamedTuple, TextIO, Optional
+from typing import NamedTuple, TextIO, Optional, Iterable, Union
 
 
 class Args(NamedTuple):
@@ -19,8 +19,10 @@ class Args(NamedTuple):
 class Item(NamedTuple):
     id_: int
     name: str
-    price: float
-    can_discount: Optional[bool]
+    # price: float
+    price: Union[float, str]
+    # price: Optional[float]
+    # can_discount: Optional[bool]
 
 
 # --------------------------------------------------
@@ -60,10 +62,27 @@ def main() -> None:
     args = get_args()
 
     try:
-        parser = recordparser.parse(fh=args.file,
-                                    cls=Item,
-                                    delimiter=args.delimiter,
-                                    quiet=args.quiet)
+        # Normal
+        parser: Iterable[Item] = recordparser.parse(fh=args.file,
+                                                    cls=Item,
+                                                    delimiter=args.delimiter,
+                                                    quiet=args.quiet)
+
+        # # Rename fields with "mapping"
+        # mapping = {'id': 'id_', 'item': 'name', 'cost': 'price'}
+        # parser: Iterable[Item] = recordparser.parse(fh=args.file,
+        #                                             cls=Item,
+        #                                             mapping=mapping,
+        #                                             delimiter=args.delimiter,
+        #                                             quiet=args.quiet)
+
+        # # Input file with no columns
+        # parser: Iterable[Item] = recordparser.parse(
+        #     fh=args.file,
+        #     cls=Item,
+        #     fieldnames=['id_', 'name', 'price'],
+        #     delimiter=args.delimiter,
+        #     quiet=args.quiet)
 
         for rec in parser:
             print(rec)

@@ -1,7 +1,7 @@
 import io
 import pytest
-import recordparser as p
 from typing import NamedTuple, Optional, Union
+from . import recordparser as p
 
 
 class Item(NamedTuple):
@@ -46,7 +46,7 @@ def test_parse_01() -> None:
 
 # --------------------------------------------------
 def test_parse_delimiter() -> None:
-    """Parse OK, set delimiter"""
+    """Try different delimiter"""
 
     text = io.StringIO('\n'.join(
         ['id_\tname\tprice', '1\tfoo\t3.25', '2\tbar\t.43', '3\tbaz\t4.01']))
@@ -59,7 +59,7 @@ def test_parse_delimiter() -> None:
 
 # --------------------------------------------------
 def test_parse_skip_extra_fields() -> None:
-    """Parses OK when extra fields"""
+    """Parse OK, will ignore extra fields"""
 
     text = io.StringIO('\n'.join([
         'id_,name,price,can_discount', '1,foo,3.25,True', '2,bar,.43,False',
@@ -72,7 +72,7 @@ def test_parse_skip_extra_fields() -> None:
 
 # --------------------------------------------------
 def test_parse_02() -> None:
-    """Parse OK"""
+    """Parse OK, handle all fields"""
 
     text = io.StringIO('\n'.join([
         'id_,name,price,can_discount', '1,foo,3.25,True', '2,bar,.43,False',
@@ -93,7 +93,7 @@ def test_missing_field() -> None:
     text = io.StringIO('\n'.join(['id_,name', '1,foo', '2,bar', '3,baz']))
 
     with pytest.raises(Exception):
-        data = list(p.parse(fh=text, cls=Item))
+        _ = list(p.parse(fh=text, cls=Item))
 
 
 # --------------------------------------------------
@@ -133,7 +133,7 @@ def test_optional_field_present() -> None:
 
 # --------------------------------------------------
 def test_union() -> None:
-    """Handle Union"""
+    """Handle Union of different types"""
 
     text = io.StringIO('\n'.join(
         ['id_,name,price', '1,foo,3.25', '2,bar,NA', '3,baz,4.01']))
@@ -141,3 +141,30 @@ def test_union() -> None:
     assert len(data) == 3
     assert data[0].price == 3.25
     assert data[1].price == 'NA'
+
+
+# --------------------------------------------------
+def test_mapping() -> None:
+    """Mapping of fieldnames from source file to new names"""
+
+    mp = {'id': 'id_', 'item': 'name', 'cost': 'price'}
+    text = io.StringIO('\n'.join(
+        ['id,item,cost', '1,foo,3.25', '2,bar,.32', '3,baz,4.01']))
+    data = list(p.parse(fh=text, cls=Item3, mapping=mp))
+    assert len(data) == 3
+    assert data[0].price == 3.25
+    assert data[1].name == 'bar'
+    assert data[2].id_ == 3
+
+
+# --------------------------------------------------
+def test_fieldnames() -> None:
+    """Setting fieldnames for inputs that do not have headers"""
+
+    text = io.StringIO('\n'.join(['1,foo,3.25', '2,bar,.32', '3,baz,4.01']))
+    data = list(
+        p.parse(fh=text, cls=Item3, fieldnames=['id_', 'name', 'price']))
+    assert len(data) == 3
+    assert data[0].price == 3.25
+    assert data[1].name == 'bar'
+    assert data[2].id_ == 3
